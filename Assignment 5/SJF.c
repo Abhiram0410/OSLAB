@@ -1,51 +1,60 @@
 #include <stdio.h>
+
 int main() {
-    int n, i, j, time = 0, completed = 0, min_index;
-    int arrival_time[100], burst_time[100], remaining_time[100];
-    int waiting_time[100], turnaround_time[100];
-    float avg_wt = 0, avg_tat = 0;
-    printf("Enter number of processes: ");
+    int n;
+    printf("Enter the number of processes: ");
     scanf("%d", &n);
-    printf("Enter Arrival Time and Burst Time:\n");
-    for (i = 0; i < n; i++) {
-        printf("P%d Arrival Time: ", i + 1);
-        scanf("%d", &arrival_time[i]);
-        printf("P%d Burst Time: ", i + 1);
-        scanf("%d", &burst_time[i]);
-        remaining_time[i] = burst_time[i]; // Initialize remaining burst time for each process
+
+    int arrival_time[n], burst_time[n], remaining_time[n], completion_time[n];
+    int waiting_time[n], turnaround_time[n], total_waiting_time = 0, total_turnaround_time = 0;
+    int smallest, time = 0, completed = 0;
+
+    for (int i = 0; i < n; i++) {
+        printf("Enter arrival time and burst time for process P%d: ", i + 1);
+        scanf("%d %d", &arrival_time[i], &burst_time[i]);
+        remaining_time[i] = burst_time[i];
     }
-    int completed_processes = 0;
-    int min_remaining_time;
-    int process_in_execution = -1;
-    while (completed_processes < n) {
-        min_remaining_time = __INT_MAX__;
-        for (i = 0; i < n; i++) {
+
+    printf("\nGantt Chart (Process execution sequence):\n");
+
+    while (completed != n) {
+        smallest = -1;
+        int min_remaining_time = 9999;
+
+        for (int i = 0; i < n; i++) {
             if (arrival_time[i] <= time && remaining_time[i] > 0 && remaining_time[i] < min_remaining_time) {
                 min_remaining_time = remaining_time[i];
-                process_in_execution = i;
+                smallest = i;
             }
         }
-        if (process_in_execution == -1) {
+
+        if (smallest == -1) {
             time++;
             continue;
         }
-        remaining_time[process_in_execution]--;
-        time++; 
-        if (remaining_time[process_in_execution] == 0) {
-            completed_processes++;
-            turnaround_time[process_in_execution] = time - arrival_time[process_in_execution];
-            waiting_time[process_in_execution] = turnaround_time[process_in_execution] - burst_time[process_in_execution];
-            avg_wt += waiting_time[process_in_execution];
-            avg_tat += turnaround_time[process_in_execution];
+
+        remaining_time[smallest]--;
+        printf("P%d ", smallest + 1);
+
+        if (remaining_time[smallest] == 0) {
+            completed++;
+            completion_time[smallest] = time + 1;
+            turnaround_time[smallest] = completion_time[smallest] - arrival_time[smallest];
+            waiting_time[smallest] = turnaround_time[smallest] - burst_time[smallest];
+            total_waiting_time += waiting_time[smallest];
+            total_turnaround_time += turnaround_time[smallest];
         }
+
+        time++;
     }
-    avg_wt /= n;
-    avg_tat /= n;
-    printf("P\tAT\tBT\tWT\tTAT\n");
-    for (i = 0; i < n; i++) {
-        printf("P%d\t%d\t%d\t%d\t%d\n", i + 1, arrival_time[i], burst_time[i], waiting_time[i], turnaround_time[i]);
+
+    printf("\n\nProcess\tArrival\tBurst\tCompletion\tWaiting\tTurnaround\n");
+    for (int i = 0; i < n; i++) {
+        printf("P%d\t%d\t%d\t%d\t\t%d\t%d\n", i + 1, arrival_time[i], burst_time[i], completion_time[i], waiting_time[i], turnaround_time[i]);
     }
-    printf("Average Waiting Time = %.2f\n", avg_wt);
-    printf("Average Turnaround Time = %.2f\n", avg_tat);
+
+    printf("\nAverage Waiting Time: %.2f", (float)total_waiting_time / n);
+    printf("\nAverage Turnaround Time: %.2f\n", (float)total_turnaround_time / n);
+
     return 0;
 }
